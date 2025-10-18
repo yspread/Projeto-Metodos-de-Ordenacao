@@ -2,12 +2,23 @@
 #include <stdlib.h>
 #include <time.h>
 
+void troca(int  *a, int *b, long long *movimentacoes);
+void bubble_sort (int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
+void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
+int particionar_quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, long long *movimentacoes);
+void quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, long long *movimentacoes);
+void merge_sort(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes);
+void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes);
+void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *movimentacoes);
+void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
+int knuth(int tamanho, int *incrementos);
+void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes);
+
 typedef struct resultado_ {
     long long comparacoes;
     long long movimentacoes;
     double tempoExecucao;
 }RESULTADO;
-
 
 int main(){
     int n;
@@ -36,7 +47,7 @@ int main(){
     printf("\n");
 
     int algoritimo;
-    printf("Selecione o modelo dos registros no vetor:\n");
+    printf("Selecione o método de ordenação:\n");
     printf("1.Bubble-Sort\n");
     printf("2.Selection-Sort\n");
     printf("3.Insertion-Sort\n");
@@ -45,7 +56,7 @@ int main(){
     printf("6.Heap-Sort\n");
     printf("7.Merge-Sort\n");
     printf("8.Contagem dos Menores\n");
-    printf("Radix-Sort\n");
+    printf("9.Radix-Sort\n");
     printf("Sua escolha: ");
     scanf("%d", &algoritimo);
     printf("\n");
@@ -74,6 +85,9 @@ int main(){
         }
         case 4:
         {
+            int incrementos[50];//vetor que armazena os valores da sequencia de knuth (nunca vai passar de 50)
+            int qtdIncrementos = knuth(n, incrementos);
+            shell_sort(vetor, n, incrementos, qtdIncrementos, res.comparacoes, res.movimentacoes);
             break;
         }
         case 5:
@@ -89,6 +103,10 @@ int main(){
             break;
         }
         case 8:
+        {
+            break;
+        }
+        case 9:
         {
             break;
         }
@@ -122,7 +140,7 @@ void troca(int  *a, int *b, long long *movimentacoes){
 }
 
 // Função do algoritimo bubble-sort
-void bubblesort (int *vetor, int tamanho, int *comparacoes, int *movimentacoes)
+void bubble_sort (int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes)
 {
     for (int i = 0; i < tamanho; i++)
     {
@@ -140,7 +158,7 @@ void bubblesort (int *vetor, int tamanho, int *comparacoes, int *movimentacoes)
 }
 
 // Função do algoritimo Insertion-sort
-void insertion_sort(int *vetor, int tamanho, int *comparacoes, int *movimentacoes){
+void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes){
     // Percorrer o array não ordenado
     for (int i = 1; i < tamanho; i++){
         int elemento = vetor[i];
@@ -202,7 +220,7 @@ int particionar_quick_sort(int *vetor, int inferior, int superior, long long *co
 }
 
 // Função principal do algoritimo quick-sort
-void quick_sort(int *vetor, int inferior, int superior, int *comparacoes, int *movimentacoes){
+void quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, long long *movimentacoes){
     if (inferior < superior){
         // Encontrando o indice correto do pivô
         int indice_pivo = particionar_quick_sort(vetor, inferior, superior, comparacoes, movimentacoes);
@@ -210,5 +228,169 @@ void quick_sort(int *vetor, int inferior, int superior, int *comparacoes, int *m
         // Ordenando recursivamente os elementos antes e depois da partição
         quick_sort(vetor, inferior, indice_pivo - 1, comparacoes, movimentacoes);
         quick_sort(vetor, indice_pivo + 1, superior, comparacoes, movimentacoes);
+    }
+}
+
+//Função principal do mergesort
+void merge_sort(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes)//inf e sup sao os indices dos extremos de cada vetor dividido
+{
+    if (inf < sup)
+    {
+        int mid = inf + (sup - inf) / 2;
+        merge_sort(vetor, inf, mid, comparacoes, movimentacoes); //pega a metade da esquerda do vetor para ordenar
+        merge_sort(vetor, mid + 1, sup, comparacoes, movimentacoes); //pega a metade da direita
+        merge(vetor, inf, mid, sup, comparacoes, movimentacoes); 
+    }
+}
+
+//funcao auxiliar para o mergesort, junta 2 arrays
+void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes)
+{
+    int n1 = mid - inf + 1;
+    int n2 = sup - mid;
+    int *infVetor = (int*)malloc(n1 * sizeof(int));
+    int *supVetor = (int*)malloc(n2 * sizeof(int));
+    for (int i = 0; i < n1; i++) //copia valores pro vetor temporario da esquerda
+    {
+        infVetor[i] = vetor[inf + i];
+        (*movimentacoes)++;
+    }
+    for (int j = 0; j < n2; j++) //copia valores pro vetor temporario da direita
+    {
+        supVetor[j] = vetor[mid + 1 + j];
+    }
+    int i = 0, j = 0, k = inf; //contadores
+    while (i < n1 && j < n2)
+    {
+        if(infVetor[i] <= supVetor[j])
+        {
+            vetor[k] = infVetor[i];
+            i++;
+            (*movimentacoes)++;
+        }
+        else
+        {
+            vetor[k] = supVetor[j];
+            j++;
+            (*movimentacoes)++;
+        }
+        (*comparacoes)++;
+        k++;
+    }
+
+    //loops para colocar os elementos que faltam no vetor original
+    while (i < n1)
+    {
+        vetor[k] = infVetor[i];
+        i++;
+        k++;
+        (*movimentacoes)++;
+    }
+    while (j < n2)
+    {
+        vetor[k] = supVetor[j];
+        j++;
+        k++;
+        (*movimentacoes)++;
+    }
+    free(infVetor);
+    free(supVetor);
+}
+
+//função do algoritmo selectionsort
+void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *movimentacoes)
+{
+    int minimo; //indice do menor valor da parte nao ordenada do vetor
+    for (int i = 0; i < (tamanho-1); i++)
+    {
+        minimo = i;
+        for (int j = (i+1); j < tamanho; j++)
+        {
+            (*comparacoes)++;
+            if (vetor[j] < vetor[minimo]) //vai procurando o menor valor do vetor nao ordenado
+            {
+                minimo = j;
+            }    
+        }
+        if (i != minimo)
+        {
+            troca(vetor[i], vetor[minimo], movimentacoes); //vai colocando o menor valor no inicio do vetor
+        }
+    }
+}
+
+//função do algoritmo ordenaçao por contagem de menores
+//este algoritmo nao funciona se tiver elementos repetidos no vetor a ser ordenado
+void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes)
+{
+    int contagem[tamanho]; //vai armazenar a quantidade de menores
+    int vetorFinal[tamanho]; //vai armazenar o vetor final, ordenado
+    for (int i = 0; i < tamanho; i++) //inicializando
+    {
+        contagem[i] = 0;
+    }
+    //conta quantos elementos menores que cada valor do vetor tem
+    for (int i = 1; i < tamanho; i++)
+    {
+        for (int j = i-1; j >= 0; j--)
+        {
+            (*comparacoes)++;
+            if (vetor[i] < vetor[j])
+            {
+                contagem[j]++;
+            }
+            else
+            {
+                contagem[i]++;
+            }
+        } 
+    }
+    for (int i = 0; i < tamanho; i++) //organizando os elementos no vetor final
+    {
+        vetorFinal[contagem[i]] = vetor[i];
+        (*movimentacoes)++;
+    }
+    for (int i = 0; i < tamanho; i++) //copiando o vetor final pro original 
+    {
+        vetor[i] = vetorFinal[i];
+        (*movimentacoes)++;
+    }
+}
+
+//função para calcular a sequencia de incrementos do shell sort baseado na sequencia de knuth, vai retornar o tamanho do vetor de incrementos
+int knuth(int tamanho, int *incrementos) //tamanho é o tamanho do vetor a ser ordenado, sempre busco que o valor maximo de knuth seja menor que a metade do vetor a se ordenar
+{    
+    int h = 1;
+    int qtdIncrementos = 0;//conta o tamanho do vetor de incrementos
+    while (h < tamanho/2)
+    {
+        qtdIncrementos++;
+        h = 3 * h + 1;
+    }
+    for (int i = 0; i < qtdIncrementos; i++) //calcula o valor dos incrementos e bota no vetor
+    {
+        h = (h - 1) / 3; //vamos colocando na ordem inversa, a partir do valor de h do ultimo loop
+        incrementos[i] = h;
+    }
+    return qtdIncrementos;
+}
+
+//função principal para o shell sort
+void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes)
+{
+    int h, aux, j;
+    //posIncremento = qual incremento que está sendo usado no momento
+    for (int posIncremento = 0; posIncremento < qtdIncrementos; posIncremento++)
+    {
+        h = incrementos[posIncremento];
+        for (int i = h; i < tamanho; i++) //percorremos o vetor baseado no valor do incremento, ate acabarem os incrementos e chegarmos no equivalente a um insertion sort(h=1)
+        {
+            aux = vetor[i];
+            for (j = i - h; j >= 0 && vetor[j] > aux; j -= h)
+            {
+                vetor[j+h] = vetor[j];
+            }
+            vetor[j+h] = aux; 
+        }
     }
 }
