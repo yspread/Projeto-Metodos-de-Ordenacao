@@ -14,6 +14,11 @@ void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long l
 int knuth(int tamanho, int *incrementos);
 void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes);
 int get_max(int *vetor, int n, long long *comparacoes);
+void counting_sort(int *vetor, int n, int exp, long long *movimentacoes);
+void radix_sort(int *vetor, int n, long long *comparacoes, long long *movimentacoes);
+void rearranjar_heap(int *vetor, int i, int tamanhoHeap, long long *comparacoes, long long *movimentacoes);
+void construir_heap(int *vetor, int n, long long *comparacoes, long long *movimentacoes);
+void heap_sort(int *vetor, int n, long long *comparacoes, long long *movimentacoes);
 
 typedef struct resultado_ {
     long long comparacoes;
@@ -74,41 +79,51 @@ int main(){
     {
         case 1: 
         {
+            bubble_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 2:
         {
+            selection_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 3:
         {
+            insertion_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 4:
         {
             int incrementos[50];//vetor que armazena os valores da sequencia de knuth (nunca vai passar de 50)
             int qtdIncrementos = knuth(n, incrementos);
-            shell_sort(vetor, n, incrementos, qtdIncrementos, res.comparacoes, res.movimentacoes);
+            shell_sort(vetor, n, incrementos, qtdIncrementos, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 5:
         {
+            if (n > 0){
+                quick_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
+            }
             break;
         }
         case 6:
         {
+            heap_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 7:
         {
+            merge_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 8:
         {
+            contagem_de_menores(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         case 9:
         {
+            radix_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
             break;
         }
         default:
@@ -223,10 +238,10 @@ int particionar_quick_sort(int *vetor, int inferior, int superior, long long *co
     int i = (inferior - 1);
     for (int j = inferior; j <= superior - 1; j++){
         // Se o elemento atual for menor ou igual ao pivô incrementa o índice do menor elemento
+        (*comparacoes) += 1;
         if (vetor[j] <= pivo){
             i++;
             troca(&vetor[i], &vetor[j], movimentacoes);
-            *comparacoes += 1;
         }
     }
     // Coloca o pivô na posição correta
@@ -270,7 +285,6 @@ void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long l
     for (int i = 0; i < n1; i++) //copia valores pro vetor temporario da esquerda
     {
         infVetor[i] = vetor[inf + i];
-        (*movimentacoes)++;
     }
     for (int j = 0; j < n2; j++) //copia valores pro vetor temporario da direita
     {
@@ -331,7 +345,7 @@ void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *m
         }
         if (i != minimo)
         {
-            troca(vetor[i], vetor[minimo], movimentacoes); //vai colocando o menor valor no inicio do vetor
+            troca(&vetor[i], &vetor[minimo], movimentacoes); //vai colocando o menor valor no inicio do vetor
         }
     }
 }
@@ -365,12 +379,10 @@ void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long l
     for (int i = 0; i < tamanho; i++) //organizando os elementos no vetor final
     {
         vetorFinal[contagem[i]] = vetor[i];
-        (*movimentacoes)++;
     }
     for (int i = 0; i < tamanho; i++) //copiando o vetor final pro original 
     {
         vetor[i] = vetorFinal[i];
-        (*movimentacoes)++;
     }
 }
 
@@ -402,7 +414,6 @@ void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, l
         for (int i = h; i < tamanho; i++)
         {
             aux = vetor[i];
-            (*movimentacoes)++;
             for (j = i - h; j >= 0; j -= h) 
             {
                 (*comparacoes)++;
@@ -454,7 +465,7 @@ void counting_sort(int *vetor, int n, int exp, long long *movimentacoes){
 }
 
 // Função principal para a ordenação por raizes (radix-sort)
-void radix_sort(int *vetor, int n, long long comparacoes, long long movimentacoes){
+void radix_sort(int *vetor, int n, long long *comparacoes, long long *movimentacoes){
     if (n <= 1){
         return;
     }
@@ -465,5 +476,64 @@ void radix_sort(int *vetor, int n, long long comparacoes, long long movimentacoe
     // Fazendo o countng sort para cada dígito do menos ao mais significativo
     for (int exp = 1; max / exp > 0; exp *= 10){
         counting_sort(vetor, n, exp, movimentacoes);
+    }
+}
+
+void rearranjar_heap(int *vetor, int i, int tamanhoHeap, long long *comparacoes, long long *movimentacoes){
+    int esquerda, direita, maior, aux;
+    maior = i;
+    esquerda = 2*i + 1;
+    direita = 2*i + 2;
+
+    if (esquerda < tamanhoHeap) {
+        (*comparacoes) += 1;
+        if (vetor[esquerda] > vetor[maior]) {
+            maior = esquerda;
+        }
+    }
+
+    if (direita < tamanhoHeap) {
+        (*comparacoes) += 1;
+        if (vetor[direita] > vetor[maior]) {
+            maior = direita;
+        }
+    }
+
+    if (maior != i) {
+        troca(&vetor[i], &vetor[maior], movimentacoes);
+
+        // Chama recursivamente para a subárvore afetada
+        rearranjar_heap(vetor, maior, tamanhoHeap, comparacoes, movimentacoes);
+    }
+}
+
+void construir_heap(int *vetor, int n, long long *comparacoes, long long *movimentacoes){
+    for (int i = n/2-1; i >= 0; i--){
+        rearranjar_heap(vetor, i, n, comparacoes, movimentacoes);
+    }
+}
+
+void heap_sort(int *vetor, int n, long long *comparacoes, long long *movimentacoes){
+    int aux, tamanhoHeap;
+
+    // Se o vetor tem 1 ou 0 elementos ele está ordenado
+    if (n <= 1){
+        return;
+    }
+
+    // Construção do heap máximo com todo o vetor
+    construir_heap(vetor, n, comparacoes, movimentacoes);
+
+    // Extração sucessiva do maior elemento e reconstrução do heap
+    tamanhoHeap = n;
+    for (int i = n-1; i > 0; i--){
+        // Troca a raíz (maior elemento) com o último elemento do heap atual
+        troca(&vetor[0], &vetor[i], movimentacoes);
+
+        // Redução do tamanho do heap para manter os elementos já ordenados
+        tamanhoHeap -= 1;
+
+        // Restauração do heap máximo na raíz da árvore reduzida
+        rearranjar_heap(vetor, 0, tamanhoHeap, comparacoes, movimentacoes);
     }
 }
