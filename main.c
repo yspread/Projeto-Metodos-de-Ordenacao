@@ -13,6 +13,7 @@ void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *m
 void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
 int knuth(int tamanho, int *incrementos);
 void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes);
+int get_max(int *vetor, int n, long long *comparacoes);
 
 typedef struct resultado_ {
     long long comparacoes;
@@ -137,6 +138,22 @@ void troca(int  *a, int *b, long long *movimentacoes){
     *b = temp;
 
     *movimentacoes += 2;
+}
+
+// Função axuliar para encontrar o maior elemento no vetor
+int get_max(int *vetor, int n, long long *comparacoes){
+    if (n <= 0){
+        return 0;
+    }
+    
+    int max = vetor[0];
+    for (int i = 1; i < n; i++){
+        (*comparacoes) += 1;
+        if (vetor[i] > max){
+            max = vetor[i];
+        }
+    }
+    return max;
 }
 
 // Função do algoritimo bubble-sort
@@ -402,5 +419,51 @@ void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, l
             vetor[j + h] = aux;
             (*movimentacoes)++;
         }
+    }
+}
+
+// Função auxiliar para fazer a ordenação estável de elementos com base em um dígito
+void counting_sort(int *vetor, int n, int exp, long long *movimentacoes){
+    // Vetor auxiliar para a saída
+    int *saida = (int*)malloc(n * sizeof(int));
+    int count[10] = {0};
+
+    // Contando ocorrências do dígito
+    for (int i = 0; i < n; i++){
+        count[(vetor[i] / exp) % 10] += 1;
+    }
+
+    // Calculando as posições
+    for (int i = 1; i < 10; i++){
+        count[i] += count[i - 1];
+    }
+
+    // Contruindo o vetor de saída
+    for (int i = n - 1; i >= 0; i--){
+        saida[count[(vetor[i]/exp) % 10] - 1] = vetor[i];
+        count[(vetor[i] / exp) % 10] -= 1;
+    }
+
+    // Copiando o vetor de saída para o original
+    for (int i = 0; i < n; i++){
+        vetor[i] = saida[i];
+        (*movimentacoes) += 1;
+    }
+
+    free(saida);
+}
+
+// Função principal para a ordenação por raizes (radix-sort)
+void radix_sort(int *vetor, int n, long long comparacoes, long long movimentacoes){
+    if (n <= 1){
+        return;
+    }
+
+    // Encontrando o máximo
+    int max = get_max(vetor, n, comparacoes);
+
+    // Fazendo o countng sort para cada dígito do menos ao mais significativo
+    for (int exp = 1; max / exp > 0; exp *= 10){
+        counting_sort(vetor, n, exp, movimentacoes);
     }
 }
