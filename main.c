@@ -379,18 +379,28 @@ int knuth(int tamanho, int *incrementos) //tamanho é o tamanho do vetor a ser o
 void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes)
 {
     int h, aux, j;
-    //posIncremento = qual incremento que está sendo usado no momento
     for (int posIncremento = 0; posIncremento < qtdIncrementos; posIncremento++)
     {
         h = incrementos[posIncremento];
-        for (int i = h; i < tamanho; i++) //percorremos o vetor baseado no valor do incremento, ate acabarem os incrementos e chegarmos no equivalente a um insertion sort(h=1)
+        for (int i = h; i < tamanho; i++)
         {
             aux = vetor[i];
-            for (j = i - h; j >= 0 && vetor[j] > aux; j -= h)
+            (*movimentacoes)++;
+            for (j = i - h; j >= 0; j -= h) 
             {
-                vetor[j+h] = vetor[j];
+                (*comparacoes)++;
+                if (vetor[j] > aux)
+                {
+                    vetor[j + h] = vetor[j];
+                    (*movimentacoes)++;
+                }
+                else
+                {
+                    break;
+                }
             }
-            vetor[j+h] = aux; 
+            vetor[j + h] = aux;
+            (*movimentacoes)++;
         }
     }
 }
