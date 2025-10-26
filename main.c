@@ -43,14 +43,14 @@ int main(){
         scanf("%d", &vetor[i]);
     }
 
-    int ordem;
+    /*int ordem;
     printf("Selecione o modelo dos registros no vetor:\n");
     printf("1.Elementos ordenados\n");
     printf("2.Elementos inversamente ordenados\n");
     printf("3.Elementos em ordem aleatória\n");
     printf("Sua escolha: ");
     scanf("%d", &ordem);
-    printf("\n");
+    printf("\n");*/
 
     int algoritimo;
     printf("Selecione o método de ordenação:\n");
