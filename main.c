@@ -27,8 +27,13 @@ typedef struct resultado_ {
 }RESULTADO;
 
 int main(){
+    //leitura do tamanho do vetor
     int n;
-    printf("Digite o número de elementos: ");
+    printf("Digite quantos elementos você quer que o vetor tenha:\n");
+    printf("100\n");
+    printf("1000\n");
+    printf("10000\n");
+    printf("100000\n");
     scanf("%d", &n);
     printf("\n");
 
@@ -38,19 +43,48 @@ int main(){
         return 1;
     }
 
-    printf("Digite os elementos do vetor:\n");
-    for(int i = 0; i < n; i++){
-        scanf("%d", &vetor[i]);
-    }
-
-    /*int ordem;
+    int ordem;
     printf("Selecione o modelo dos registros no vetor:\n");
     printf("1.Elementos ordenados\n");
     printf("2.Elementos inversamente ordenados\n");
     printf("3.Elementos em ordem aleatória\n");
     printf("Sua escolha: ");
     scanf("%d", &ordem);
-    printf("\n");*/
+    printf("\n");
+
+    switch (ordem)
+    {
+        case 1: //gera um vetor de elementos ordenados
+        {
+            for (int i = 0; i <  n; i++)
+            {
+                vetor[i] = i + 1;
+            }
+            break;
+        }
+        case 2: //gera um vetor de elementos em ordem aleatoria
+        {
+            srand(time(NULL)); //gera uma seed para a geraçao aleatoria dos valores do vetor
+            for (int i = 0; i < n; i++)
+            {
+                vetor[i] = rand() % n; //aleatoriza os elemetos com base na seed
+            }
+            break;
+        }
+        case 3: //gera um vetor de elementos ordenados inversamente
+        {
+            for (int i = 0; i < n; i++)
+            {
+                vetor[i] = n - i;   
+            }
+            break;
+        }
+        default:
+        {
+            printf("Modelo invalido!");
+            return 1;
+        }
+    }
 
     int algoritimo;
     printf("Selecione o método de ordenação:\n");
