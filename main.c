@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-bah
+
 void troca(int  *a, int *b, long long *movimentacoes);
 void bubble_sort (int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
 void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
