@@ -28,64 +28,30 @@ typedef struct resultado_ {
 
 int main(){
     //leitura do tamanho do vetor
-    int n;
+    int tamanho;
     printf("Digite quantos elementos você quer que o vetor tenha:\n");
-    printf("100\n");
-    printf("1000\n");
-    printf("10000\n");
-    printf("100000\n");
-    scanf("%d", &n);
-    printf("\n");
-
-    int *vetor = (int*)malloc(sizeof(int)*n);
-    if (vetor == NULL){
-        printf("Erro ao alocar memória para o vetor\n");
-        return 1;
-    }
-
-    int ordem;
-    printf("Selecione o modelo dos registros no vetor:\n");
-    printf("1.Elementos ordenados\n");
-    printf("2.Elementos inversamente ordenados\n");
-    printf("3.Elementos em ordem aleatória\n");
+    printf("1.100\n");
+    printf("2.1000\n");
+    printf("3.10000\n");
+    printf("4.100000\n");
     printf("Sua escolha: ");
-    scanf("%d", &ordem);
+    scanf("%d", &tamanho);
+    printf("\n");
+    while (tamanho < 1 || tamanho > 4){
+        printf("Selecione uma opção válida (1 a 4)\n");
+        scanf("%d", &tamanho);
+    }
     printf("\n");
 
-    switch (ordem)
-    {
-        case 1: //gera um vetor de elementos ordenados
-        {
-            for (int i = 0; i <  n; i++)
-            {
-                vetor[i] = i + 1;
-            }
-            break;
-        }
-        case 2: //gera um vetor de elementos em ordem aleatoria
-        {
-            srand(time(NULL)); //gera uma seed para a geraçao aleatoria dos valores do vetor
-            for (int i = 0; i < n; i++)
-            {
-                vetor[i] = rand() % n; //aleatoriza os elemetos com base na seed
-            }
-            break;
-        }
-        case 3: //gera um vetor de elementos ordenados inversamente
-        {
-            for (int i = 0; i < n; i++)
-            {
-                vetor[i] = n - i;   
-            }
-            break;
-        }
-        default:
-        {
-            printf("Modelo invalido!");
-            return 1;
-        }
-    }
+    int n;
+    switch (tamanho){
+        case 1: n = 100; break;
+        case 2: n = 1000; break;
+        case 3: n = 10000; break;
+        case 4: n = 100000; break;
+    }   
 
+    // Seleção do algoritimo de ordenação
     int algoritimo;
     printf("Selecione o método de ordenação:\n");
     printf("1.Bubble-Sort\n");
@@ -101,83 +67,177 @@ int main(){
     scanf("%d", &algoritimo);
     printf("\n");
 
-    RESULTADO res;
-    res.comparacoes = 0;
-    res.movimentacoes = 0;
-    res.tempoExecucao = 0;
+    // Seleção da estrutura dos elementos no vetor
+    int ordem;
+    printf("Selecione o modelo dos registros no vetor:\n");
+    printf("1.Elementos ordenados\n");
+    printf("2.Elementos inversamente ordenados\n");
+    printf("3.Elementos em ordem aleatória\n");
+    printf("Sua escolha: ");
+    scanf("%d", &ordem);
+    printf("\n");
 
-    clock_t inicio, fim;
-    inicio = clock();
+    // Defnição da seed do srand()
+    srand(time(NULL));
 
-    switch(algoritimo)        
-    {
-        case 1: 
-        {
-            bubble_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 2:
-        {
-            selection_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 3:
-        {
-            insertion_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 4:
-        {
-            int incrementos[50];//vetor que armazena os valores da sequencia de knuth (nunca vai passar de 50)
-            int qtdIncrementos = knuth(n, incrementos);
-            shell_sort(vetor, n, incrementos, qtdIncrementos, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 5:
-        {
-            if (n > 0){
-                quick_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
-            }
-            break;
-        }
-        case 6:
-        {
-            heap_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 7:
-        {
-            merge_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 8:
-        {
-            contagem_de_menores(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        case 9:
-        {
-            radix_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
-            break;
-        }
-        default:
-        {
-            printf("Escolha do algoritimo inválida\n");
-            return 0;
-        }
+    // Definição da quantidade de vezes que o algorítimo será executado
+    int execucoes = 0;
+    if (ordem == 1 || ordem == 2){
+        execucoes = 1;
+    }
+    if (ordem == 3){
+        execucoes = 5;
     }
 
-    fim = clock();
-    res.tempoExecucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
+    // Alocando memória para o vetor
+    int *vetor = (int*)malloc(sizeof(int)*n);
+    if (vetor == NULL){
+        printf("Erro ao alocar memória para o vetor\n");
+        return 1;
+    }
 
-    printf("Resultado Final:\n");
-    printf("Comparações de Chaves: %lld\n", res.comparacoes);
-    printf("Movimentações de Registro: %lld\n", res.movimentacoes);
-    printf("Tempo de execução: %.6f segundos\n", res.tempoExecucao);
+    // Inicialização das variáveis contadoras para o caso de arrays de elementos aleatórios
+    long long totalComparacoes = 0;
+    long long totalMovimentacoes = 0;
+    double totalTempo = 0;
+
+    for (int i = 0; i < execucoes; i++){
+
+        // Preenchimento do vetor
+        switch (ordem)
+        {
+            case 1: //gera um vetor de elementos ordenados
+            {
+                for (int j = 0; j <  n; j++)
+                {
+                    vetor[j] = j + 1;
+                }
+                break;
+            }
+            case 2: //gera um vetor de elementos ordenados inversamente
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    vetor[j] = n - j;   
+                }
+                break;
+            }
+            case 3: //gera um vetor de elementos aleatórios
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    vetor[j] = rand() % n; //aleatoriza os elemetos com base na seed
+                }
+                break;
+            }
+            default:
+            {
+                printf("Modelo invalido!");
+                return 1;
+            }
+        }
+
+        // Incializando o resultado
+        RESULTADO res;
+        res.comparacoes = 0;
+        res.movimentacoes = 0;
+        res.tempoExecucao = 0;
+
+        clock_t inicio, fim;
+        inicio = clock();
+
+        switch(algoritimo)        
+        {
+            case 1: 
+            {
+                bubble_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 2:
+            {
+                selection_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 3:
+            {
+                insertion_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 4:
+            {
+                int incrementos[50];//vetor que armazena os valores da sequencia de knuth (nunca vai passar de 50)
+                int qtdIncrementos = knuth(n, incrementos);
+                shell_sort(vetor, n, incrementos, qtdIncrementos, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 5:
+            {
+                if (n > 0){
+                    quick_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
+                }
+                break;
+            }
+            case 6:
+            {
+                heap_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 7:
+            {
+                merge_sort(vetor, 0, n-1, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            case 8:
+            {
+                if (ordem == 3){
+                    printf("O Algoritmo 'Contagem dos Menores' não suporta vetores com elementos duplicados (caso aleatório).\n");
+                    res.comparacoes = 0;
+                    res.movimentacoes = 0;
+                } else {
+                    contagem_de_menores(vetor, n, &res.comparacoes, &res.movimentacoes);
+                }
+                break;
+            }
+            case 9:
+            {
+                radix_sort(vetor, n, &res.comparacoes, &res.movimentacoes);
+                break;
+            }
+            default:
+            {
+                printf("Escolha do algoritimo inválida\n");
+                return 0;
+            }
+        }
+
+        fim = clock();
+        res.tempoExecucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
+
+        // Somando nos acumuladores do caso aleatório
+        totalComparacoes += res.comparacoes;
+        totalMovimentacoes += res.movimentacoes;
+        totalTempo += res.tempoExecucao;
+
+        if (ordem == 1 || ordem == 2){
+            printf("Resultado Final:\n");
+        }else{
+            printf("Resultado da Execução %d:\n", i+1);
+        }
+        printf("Comparações de Chaves: %lld\n", res.comparacoes);
+        printf("Movimentações de Registro: %lld\n", res.movimentacoes);
+        printf("Tempo de execução: %.6f segundos\n", res.tempoExecucao);
+    }
+
+    if (ordem == 3){
+        printf ("\n\n");
+        printf("Resultado Final (Média de %d execuções):\n", execucoes);
+        printf("Comparações de Chaves: %lld\n", totalComparacoes / execucoes);
+        printf("Movimentações de Registro: %lld\n", totalMovimentacoes / execucoes);
+        printf("Tempo de execução: %.6f segundos\n", totalTempo / execucoes);
+    }
 
     free(vetor);
     return 0;
-
 }
 
 // Função auxiliar para trocar dois elementos
@@ -228,19 +288,21 @@ void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *
     // Percorrer o array não ordenado
     for (int i = 1; i < tamanho; i++){
         int elemento = vetor[i];
-        int j = i - 1;
+        int j;
 
         // Abrindo espaço para inserção no vetor ordenado (mover os elementos "maiores")
-        while (j >= 0 && vetor[j] > elemento){
+        for (j = i - 1; j >= 0; j--){
             *comparacoes += 1;
-            vetor[j + 1] = vetor[j];
-            j--;
-            *movimentacoes += 1;
+            if (vetor[j] > elemento){
+                vetor[j + 1] = vetor[j];
+                (*movimentacoes)++;
+            } else {
+                break; // Encontrou a posição
+            }
         }
         vetor[j + 1] = elemento;
-        *movimentacoes += 1;
+        (*movimentacoes)++;
     }
-
     return;
 }
 
@@ -331,13 +393,11 @@ void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long l
         {
             vetor[k] = infVetor[i];
             i++;
-            (*movimentacoes)++;
         }
         else
         {
             vetor[k] = supVetor[j];
             j++;
-            (*movimentacoes)++;
         }
         (*comparacoes)++;
         k++;
@@ -417,6 +477,7 @@ void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long l
     for (int i = 0; i < tamanho; i++) //copiando o vetor final pro original 
     {
         vetor[i] = vetorFinal[i];
+        *movimentacoes += 1;
     }
 }
 
