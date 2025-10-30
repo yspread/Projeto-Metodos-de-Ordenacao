@@ -381,10 +381,12 @@ void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long l
     for (int i = 0; i < n1; i++) //copia valores pro vetor temporario da esquerda
     {
         infVetor[i] = vetor[inf + i];
+        (*movimentacoes)++;
     }
     for (int j = 0; j < n2; j++) //copia valores pro vetor temporario da direita
     {
         supVetor[j] = vetor[mid + 1 + j];
+        (*movimentacoes)++;
     }
     int i = 0, j = 0, k = inf; //contadores
     while (i < n1 && j < n2)
@@ -400,6 +402,7 @@ void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long l
             j++;
         }
         (*comparacoes)++;
+        (*movimentacoes)++;
         k++;
     }
 
@@ -448,8 +451,8 @@ void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *m
 //este algoritmo nao funciona se tiver elementos repetidos no vetor a ser ordenado
 void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes)
 {
-    int contagem[tamanho]; //vai armazenar a quantidade de menores
-    int vetorFinal[tamanho]; //vai armazenar o vetor final, ordenado
+    int *contagem = (int *)malloc(tamanho *sizeof(int)); //vai armazenar a quantidade de menores
+    int *vetorFinal = (int*)malloc(tamanho *sizeof(int)); //vai armazenar o vetor final, ordenado
     for (int i = 0; i < tamanho; i++) //inicializando
     {
         contagem[i] = 0;
@@ -473,12 +476,15 @@ void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long l
     for (int i = 0; i < tamanho; i++) //organizando os elementos no vetor final
     {
         vetorFinal[contagem[i]] = vetor[i];
+        (*movimentacoes)++;
     }
     for (int i = 0; i < tamanho; i++) //copiando o vetor final pro original 
     {
         vetor[i] = vetorFinal[i];
         *movimentacoes += 1;
     }
+    free (contagem);
+    free (vetorFinal);
 }
 
 //função para calcular a sequencia de incrementos do shell sort baseado na sequencia de knuth, vai retornar o tamanho do vetor de incrementos
@@ -547,6 +553,7 @@ void counting_sort(int *vetor, int n, int exp, long long *movimentacoes){
     // Contruindo o vetor de saída
     for (int i = n - 1; i >= 0; i--){
         saida[count[(vetor[i]/exp) % 10] - 1] = vetor[i];
+        (*movimentacoes)++;
         count[(vetor[i] / exp) % 10] -= 1;
     }
 
