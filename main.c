@@ -2,19 +2,21 @@
 #include <stdlib.h>
 #include <time.h>
 
+// Protótipo de todas as funções
 void troca(int  *a, int *b, long long *movimentacoes);
 void bubble_sort (int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
 void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
 int particionar_quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, long long *movimentacoes);
 void quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, long long *movimentacoes);
 void merge_sort(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes);
-void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes);
+void merge_buffer(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes, int *buffer);
+void merge_recursivo(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes, int *buffer);
 void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *movimentacoes);
 void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes);
 int knuth(int tamanho, int *incrementos);
 void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, long long *comparacoes, long long *movimentacoes);
 int get_max(int *vetor, int n, long long *comparacoes);
-void counting_sort(int *vetor, int n, int exp, long long *movimentacoes);
+void counting_sort(int *vetor, int n, int exp, long long *movimentacoes, int *saida);
 void radix_sort(int *vetor, int n, long long *comparacoes, long long *movimentacoes);
 void rearranjar_heap(int *vetor, int i, int tamanhoHeap, long long *comparacoes, long long *movimentacoes);
 void construir_heap(int *vetor, int n, long long *comparacoes, long long *movimentacoes);
@@ -360,69 +362,82 @@ void quick_sort(int *vetor, int inferior, int superior, long long *comparacoes, 
 }
 
 //Função principal do mergesort
-void merge_sort(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes)//inf e sup sao os indices dos extremos de cada vetor dividido
-{
-    if (inf < sup)
-    {
+void merge_sort(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes){
+    int tamanho = sup + 1; // n = (n-1) + 1
+    if (tamanho <= 1){
+        return;
+    }    
+
+    // Aloca o buffer
+    int *buffer = (int*)malloc(tamanho * sizeof(int));
+    if (buffer == NULL){
+        printf("Erro de alocação no buffer do merge_sort\n");
+        return;
+    }
+
+    // Chama a função recursiva
+    merge_recursivo(vetor, inf, sup, comparacoes, movimentacoes, buffer);
+
+    // Libera o buffer
+    free(buffer);
+}
+
+void merge_recursivo(int *vetor, int inf, int sup, long long *comparacoes, long long *movimentacoes, int *buffer){
+    if (inf < sup){
         int mid = inf + (sup - inf) / 2;
-        merge_sort(vetor, inf, mid, comparacoes, movimentacoes); //pega a metade da esquerda do vetor para ordenar
-        merge_sort(vetor, mid + 1, sup, comparacoes, movimentacoes); //pega a metade da direita
-        merge(vetor, inf, mid, sup, comparacoes, movimentacoes); 
+        merge_recursivo(vetor, inf, mid, comparacoes, movimentacoes, buffer);
+        merge_recursivo(vetor, mid + 1, sup, comparacoes, movimentacoes, buffer);
+        merge_buffer(vetor, inf, mid, sup, comparacoes, movimentacoes, buffer); 
     }
 }
 
-//funcao auxiliar para o mergesort, junta 2 arrays
-void merge(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes)
+// Funcao auxiliar para o mergesort, junta 2 arrays
+void merge_buffer(int *vetor, int inf, int mid, int sup, long long *comparacoes, long long *movimentacoes, int *buffer)
 {
-    int n1 = mid - inf + 1;
-    int n2 = sup - mid;
-    int *infVetor = (int*)malloc(n1 * sizeof(int));
-    int *supVetor = (int*)malloc(n2 * sizeof(int));
-    for (int i = 0; i < n1; i++) //copia valores pro vetor temporario da esquerda
-    {
-        infVetor[i] = vetor[inf + i];
-        (*movimentacoes)++;
+    // Copia os elementos para o buffer
+    for (int i = inf; i <= mid; i++) {
+        buffer[i] = vetor[i];
     }
-    for (int j = 0; j < n2; j++) //copia valores pro vetor temporario da direita
-    {
-        supVetor[j] = vetor[mid + 1 + j];
-        (*movimentacoes)++;
+    for (int j = mid + 1; j <= sup; j++) {
+        buffer[j] = vetor[j];
     }
-    int i = 0, j = 0, k = inf; //contadores
-    while (i < n1 && j < n2)
+
+    // Faz o merge de volta para o 'vetor' principal
+    int i = inf;
+    int j = mid + 1;
+    int k = inf;
+
+    while (i <= mid && j <= sup)
     {
-        if(infVetor[i] <= supVetor[j])
+        (*comparacoes)++;
+        if(buffer[i] <= buffer[j])
         {
-            vetor[k] = infVetor[i];
+            vetor[k] = buffer[i];
             i++;
         }
         else
         {
-            vetor[k] = supVetor[j];
+            vetor[k] = buffer[j];
             j++;
         }
-        (*comparacoes)++;
         (*movimentacoes)++;
         k++;
     }
 
-    //loops para colocar os elementos que faltam no vetor original
-    while (i < n1)
-    {
-        vetor[k] = infVetor[i];
+    //Copia o restante (se houver)
+    while (i <= mid){
+        vetor[k] = buffer[i];
         i++;
         k++;
-        (*movimentacoes)++;
+        (*movimentacoes)++; 
     }
-    while (j < n2)
-    {
-        vetor[k] = supVetor[j];
+
+    while (j <= sup){
+        vetor[k] = buffer[j];
         j++;
         k++;
         (*movimentacoes)++;
     }
-    free(infVetor);
-    free(supVetor);
 }
 
 //função do algoritmo selectionsort
@@ -451,38 +466,44 @@ void selection_sort(int *vetor, int tamanho, long long*comparacoes, long long *m
 //este algoritmo nao funciona se tiver elementos repetidos no vetor a ser ordenado
 void contagem_de_menores(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes)
 {
-    int *contagem = (int *)malloc(tamanho *sizeof(int)); //vai armazenar a quantidade de menores
-    int *vetorFinal = (int*)malloc(tamanho *sizeof(int)); //vai armazenar o vetor final, ordenado
-    for (int i = 0; i < tamanho; i++) //inicializando
-    {
+    int *contagem = (int *)malloc(tamanho *sizeof(int)); 
+    int *vetorFinal = (int*)malloc(tamanho *sizeof(int));
+    if (contagem == NULL || vetorFinal == NULL) {
+        printf("Erro de alocação no contagem_de_menores\n");
+        return;
+    }
+
+    for (int i = 0; i < tamanho; i++) {
         contagem[i] = 0;
     }
-    //conta quantos elementos menores que cada valor do vetor tem
+    
+    // Conta quantos elementos menores
     for (int i = 1; i < tamanho; i++)
     {
         for (int j = i-1; j >= 0; j--)
         {
             (*comparacoes)++;
-            if (vetor[i] < vetor[j])
-            {
+            if (vetor[i] < vetor[j]) {
                 contagem[j]++;
-            }
-            else
-            {
+            } else {
                 contagem[i]++;
             }
         } 
     }
-    for (int i = 0; i < tamanho; i++) //organizando os elementos no vetor final
+    
+    // Organiza os elementos no vetor final (buffer)
+    for (int i = 0; i < tamanho; i++)
     {
         vetorFinal[contagem[i]] = vetor[i];
-        (*movimentacoes)++;
     }
-    for (int i = 0; i < tamanho; i++) //copiando o vetor final pro original 
+    
+    // Copia o vetor final (buffer) para o original
+    for (int i = 0; i < tamanho; i++) 
     {
         vetor[i] = vetorFinal[i];
-        *movimentacoes += 1;
+        (*movimentacoes) += 1;
     }
+    
     free (contagem);
     free (vetorFinal);
 }
@@ -535,9 +556,7 @@ void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, l
 }
 
 // Função auxiliar para fazer a ordenação estável de elementos com base em um dígito
-void counting_sort(int *vetor, int n, int exp, long long *movimentacoes){
-    // Vetor auxiliar para a saída
-    int *saida = (int*)malloc(n * sizeof(int));
+void counting_sort(int *vetor, int n, int exp, long long *movimentacoes, int *saida){
     int count[10] = {0};
 
     // Contando ocorrências do dígito
@@ -550,20 +569,17 @@ void counting_sort(int *vetor, int n, int exp, long long *movimentacoes){
         count[i] += count[i - 1];
     }
 
-    // Contruindo o vetor de saída
+    // Construindo o vetor 'saida' (buffer)
     for (int i = n - 1; i >= 0; i--){
         saida[count[(vetor[i]/exp) % 10] - 1] = vetor[i];
-        (*movimentacoes)++;
         count[(vetor[i] / exp) % 10] -= 1;
     }
 
-    // Copiando o vetor de saída para o original
+    // Copiando o vetor 'saida' para o original
     for (int i = 0; i < n; i++){
         vetor[i] = saida[i];
         (*movimentacoes) += 1;
     }
-
-    free(saida);
 }
 
 // Função principal para a ordenação por raizes (radix-sort)
@@ -572,13 +588,24 @@ void radix_sort(int *vetor, int n, long long *comparacoes, long long *movimentac
         return;
     }
 
+    // Aloca o buffer de saída
+    int *saida = (int*)malloc(n * sizeof(int));
+    if (saida == NULL) {
+        printf("Erro de alocação no radix_sort\n");
+        return;
+    }
+
     // Encontrando o máximo
     int max = get_max(vetor, n, comparacoes);
 
-    // Fazendo o countng sort para cada dígito do menos ao mais significativo
+    // Fazendo o counting sort para cada dígito
     for (int exp = 1; max / exp > 0; exp *= 10){
-        counting_sort(vetor, n, exp, movimentacoes);
+        // Passa o buffer pré-alocado para a função
+        counting_sort(vetor, n, exp, movimentacoes, saida);
     }
+    
+    // Libera o buffer
+    free(saida);
 }
 
 void rearranjar_heap(int *vetor, int i, int tamanhoHeap, long long *comparacoes, long long *movimentacoes){
