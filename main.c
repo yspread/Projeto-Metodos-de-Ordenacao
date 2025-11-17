@@ -549,8 +549,10 @@ void shell_sort(int *vetor, int tamanho, int *incrementos, int qtdIncrementos, l
                     break;
                 }
             }
-            vetor[j + h] = aux;
-            (*movimentacoes)++;
+            if (j + h != i){
+                vetor[j + h] = aux;
+                (*movimentacoes)++;
+            }
         }
     }
 }
