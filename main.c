@@ -267,24 +267,31 @@ int get_max(int *vetor, int n, long long *comparacoes){
     return max;
 }
 
-// Função do algoritimo bubble-sort
+// Função do algoritimo bubble-sort otimizado
 void bubble_sort (int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes)
 {
-    for (int i = 0; i < tamanho; i++)
+    int flag;
+
+    for (int i = 0; i < tamanho - 1; i++)
     {
+        flag = 0;
+
         for (int j = 0; j < tamanho - i - 1; j++)
         {
+            (*comparacoes)++;
             if(vetor[j] > vetor[j + 1])
             {
                 troca(&vetor[j], &vetor[j + 1], movimentacoes);
+                flag = 1; // Marca que houve troca
             }
-            *comparacoes += 1;  
+        }
+
+        // Se não houve nenhuma troca nesta passada, o vetor já está ordenado
+        if (flag == 0) {
+            break;
         }
     }
-
-    return;
 }
-
 // Função do algoritimo Insertion-sort
 void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *movimentacoes){
     // Percorrer o array não ordenado
