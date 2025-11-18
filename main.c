@@ -302,8 +302,10 @@ void insertion_sort(int *vetor, int tamanho, long long *comparacoes, long long *
                 break; // Encontrou a posição
             }
         }
-        vetor[j + 1] = elemento;
-        (*movimentacoes)++;
+        if ((j + 1) != i) {
+            vetor[j + 1] = elemento;
+            (*movimentacoes)++;
+        }
     }
     return;
 }
